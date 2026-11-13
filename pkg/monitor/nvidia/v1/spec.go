@@ -120,10 +120,15 @@ func (s Spec) DeviceMemoryOffset(idx int) uint64 {
 	return v
 }
 
+// Prefer used.total. If it is 0, use this process's monitorused instead.
 func (s Spec) DeviceMemoryTotal(idx int) uint64 {
 	v := uint64(0)
 	for _, p := range s.sr.procs {
-		v += p.used[idx].total
+		if accounted := p.used[idx].total; accounted > 0 {
+			v += accounted
+		} else {
+			v += p.monitorused[idx]
+		}
 	}
 	return v
 }
